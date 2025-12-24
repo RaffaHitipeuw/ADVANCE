@@ -23,7 +23,7 @@ export default function SplashScreen({ onFinish }) {
   const [phase, setPhase] = useState(0)
   const [maskScale, setMaskScale] = useState(1)
 
-  const maskRef = useRef<HTMLDivElement | null>(null)
+  const maskRef = useRef(null)
 
   const riseDuration = 260
   const downDuration = 260
