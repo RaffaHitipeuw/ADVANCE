@@ -1,10 +1,9 @@
-import SplashScreen from '../components/preloader/preloader'
-import Hero from '../components/preloader/preloader'
+import Scene from "../components/three/Scene";
 
 export default function Page() {
   return (
-    <>
-      <Hero />
-    </>
-  )
+    <main style={{ height: "800vh" }}>
+      <Scene />
+    </main>
+  );
 }
