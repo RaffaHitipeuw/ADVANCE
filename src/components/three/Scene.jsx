@@ -4,6 +4,8 @@ import { Canvas } from "@react-three/fiber";
 import Tunnel from "./Tunnel";
 import CameraRail from "./CameraRail";
 import Water from "./Water";
+import Bridge from "./Bridge";
+import CameraLook from "./CameraLook";
 
 export default function Scene() {
   return (
@@ -15,10 +17,12 @@ export default function Scene() {
       }}
     >
       <ambientLight intensity={1} />
-
-      <Tunnel />
+      <Tunnel>
+        <Bridge />
+      </Tunnel>
       <Water />
       <CameraRail />
+      <CameraLook />
     </Canvas>
   );
 }

@@ -1,26 +1,33 @@
 "use client";
 
 import { useEffect } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 export const scrollState = {
   speed: 0,
+  targetSpeed: 0,
 };
 
 export default function CameraRail() {
   useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger);
+    const handleMouseDown = (e) => {
+      if (e.button === 0) {
+        scrollState.targetSpeed = 0.5;
+      }
+    };
 
-    ScrollTrigger.create({
-      trigger: document.body,
-      start: "top top",
-      end: "+=6000",
-      scrub: true,
-      onUpdate: (self) => {
-        scrollState.speed = self.getVelocity() * 0.00006;
-      },
-    });
+    const handleMouseUp = (e) => {
+      if (e.button === 0) {
+        scrollState.targetSpeed = 0;
+      }
+    };
+
+    window.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      window.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
   }, []);
 
   return null;
