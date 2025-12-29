@@ -6,6 +6,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 export const scrollState = {
   speed: 0,
   targetSpeed: 0,
+  mode: "rail",
 };
 
 export default function CameraRail() {
@@ -17,10 +18,23 @@ export default function CameraRail() {
 
   useEffect(() => {
     const down = (e) => {
-      if (e.button === 0) scrollState.targetSpeed = 0.6;
+      if (e.button !== 0) return;
+
+      if (scrollState.mode === "rail") {
+        scrollState.targetSpeed = 0.6;
+      }
+
+      if (scrollState.mode === "bridgeHold") {
+        scrollState.mode = "dive";
+      }
     };
+
     const up = (e) => {
-      if (e.button === 0) scrollState.targetSpeed = 0;
+      if (e.button !== 0) return;
+
+      if (scrollState.mode === "rail") {
+        scrollState.targetSpeed = 0;
+      }
     };
 
     window.addEventListener("mousedown", down);
@@ -42,55 +56,66 @@ export default function CameraRail() {
     return () => window.removeEventListener("mousemove", move);
   }, []);
 
-useFrame(() => {
-  scrollState.speed +=
-    (scrollState.targetSpeed - scrollState.speed) * 0.04;
+  useFrame(() => {
+    scrollState.speed +=
+      (scrollState.targetSpeed - scrollState.speed) * 0.04;
 
-  const END_Z = -40;
-  const STOP_RANGE = 6;
+    const END_Z = -40;
+    const STOP_RANGE = 6;
 
-  const distToEnd = camera.position.z - END_Z;
-  const slowFactor = clamp(distToEnd / STOP_RANGE, 0, 1);
+    if (scrollState.mode === "rail") {
+      const distToEnd = camera.position.z - END_Z;
+      const slowFactor = clamp(distToEnd / STOP_RANGE, 0, 1);
 
-  const effectiveSpeed = scrollState.speed * slowFactor;
-  camera.position.z -= effectiveSpeed;
+      camera.position.z -= scrollState.speed * slowFactor;
 
-  if (distToEnd <= 0.01) {
-    camera.position.z = END_Z;
-    scrollState.speed = 0;
-    scrollState.targetSpeed = 0;
-  }
+      if (distToEnd <= 0.02) {
+        camera.position.z = END_Z;
+        scrollState.speed = 0;
+        scrollState.targetSpeed = 0;
+        scrollState.mode = "bridgeHold";
+      }
 
-  const targetRotX = clamp(-mouse.current.y * 0.12, -0.12, 0.12);
-  const targetRotY = clamp(-mouse.current.x * 0.2, -0.2, 0.2);
+      const targetRotX = clamp(-mouse.current.y * 0.12, -0.12, 0.12);
+      const targetRotY = clamp(-mouse.current.x * 0.2, -0.2, 0.2);
 
-  camera.rotation.x +=
-    (targetRotX - camera.rotation.x) * 0.08;
-  camera.rotation.y +=
-    (targetRotY - camera.rotation.y) * 0.08;
+      camera.rotation.x += (targetRotX - camera.rotation.x) * 0.08;
+      camera.rotation.y += (targetRotY - camera.rotation.y) * 0.08;
 
-  const BRIDGE_START_Z = END_Z + 8;
+      const BRIDGE_START_Z = END_Z + 8;
+      if (camera.position.z < BRIDGE_START_Z) {
+        let t =
+          (camera.position.z - BRIDGE_START_Z) /
+          (END_Z - BRIDGE_START_Z);
 
-  if (camera.position.z < BRIDGE_START_Z) {
-    let t =
-      (camera.position.z - BRIDGE_START_Z) /
-      (END_Z - BRIDGE_START_Z);
+        t = clamp(t, 0, 1);
 
-    t = clamp(t, 0, 1);
+        const smoothT =
+          t * t * t * (t * (6 * t - 15) + 10);
 
-    const smoothT =
-      t * t * t * (t * (6 * t - 15) + 10);
+        const BRIDGE_HEIGHT = 8.5;
+        const targetY = smoothT * BRIDGE_HEIGHT;
 
-    const BRIDGE_HEIGHT = 8.5;
-    const targetY = smoothT * BRIDGE_HEIGHT;
+        camera.position.y +=
+          (targetY - camera.position.y) * 0.035;
+      }
+    }
 
-    camera.position.y +=
-      (targetY - camera.position.y) * 0.035;
-  }
-});
+    if (scrollState.mode === "bridgeHold") {
+      camera.rotation.x +=
+        (-0.05 - camera.rotation.x) * 0.02;
+    }
 
+    if (scrollState.mode === "dive") {
+      camera.position.y +=
+        (-12 - camera.position.y) * 0.02;
 
+      camera.rotation.x +=
+        (-0.6 - camera.rotation.x) * 0.02;
 
+      camera.position.z -= 0.15;
+    }
+  });
 
   return null;
 }
