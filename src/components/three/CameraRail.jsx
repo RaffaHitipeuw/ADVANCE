@@ -20,21 +20,16 @@ export default function CameraRail() {
     const down = (e) => {
       if (e.button !== 0) return;
 
-      if (scrollState.mode === "rail") {
-        scrollState.targetSpeed = 0.6;
-      }
-
       if (scrollState.mode === "bridgeHold") {
         scrollState.mode = "dive";
+        scrollState.targetSpeed = 0;
+      } else {
+        scrollState.targetSpeed = 0.6;
       }
     };
 
-    const up = (e) => {
-      if (e.button !== 0) return;
-
-      if (scrollState.mode === "rail") {
-        scrollState.targetSpeed = 0;
-      }
+    const up = () => {
+      scrollState.targetSpeed = 0;
     };
 
     window.addEventListener("mousedown", down);
@@ -51,7 +46,6 @@ export default function CameraRail() {
       mouse.current.x = (e.clientX / window.innerWidth) * 2 - 1;
       mouse.current.y = (e.clientY / window.innerHeight) * 2 - 1;
     };
-
     window.addEventListener("mousemove", move);
     return () => window.removeEventListener("mousemove", move);
   }, []);
@@ -64,56 +58,51 @@ export default function CameraRail() {
     const STOP_RANGE = 6;
 
     if (scrollState.mode === "rail") {
-      const distToEnd = camera.position.z - END_Z;
-      const slowFactor = clamp(distToEnd / STOP_RANGE, 0, 1);
+      const dist = camera.position.z - END_Z;
+      const slow = clamp(dist / STOP_RANGE, 0, 1);
 
-      camera.position.z -= scrollState.speed * slowFactor;
+      camera.position.z -= scrollState.speed * slow;
 
-      if (distToEnd <= 0.02) {
+      if (dist <= 0.02) {
         camera.position.z = END_Z;
         scrollState.speed = 0;
         scrollState.targetSpeed = 0;
         scrollState.mode = "bridgeHold";
       }
 
-      const targetRotX = clamp(-mouse.current.y * 0.12, -0.12, 0.12);
-      const targetRotY = clamp(-mouse.current.x * 0.2, -0.2, 0.2);
+      const rx = clamp(-mouse.current.y * 0.12, -0.12, 0.12);
+      const ry = clamp(-mouse.current.x * 0.2, -0.2, 0.2);
 
-      camera.rotation.x += (targetRotX - camera.rotation.x) * 0.08;
-      camera.rotation.y += (targetRotY - camera.rotation.y) * 0.08;
+      camera.rotation.x += (rx - camera.rotation.x) * 0.08;
+      camera.rotation.y += (ry - camera.rotation.y) * 0.08;
 
-      const BRIDGE_START_Z = END_Z + 8;
-      if (camera.position.z < BRIDGE_START_Z) {
+      const BRIDGE_START = END_Z + 8;
+      if (camera.position.z < BRIDGE_START) {
         let t =
-          (camera.position.z - BRIDGE_START_Z) /
-          (END_Z - BRIDGE_START_Z);
+          (camera.position.z - BRIDGE_START) /
+          (END_Z - BRIDGE_START);
 
         t = clamp(t, 0, 1);
-
-        const smoothT =
-          t * t * t * (t * (6 * t - 15) + 10);
-
-        const BRIDGE_HEIGHT = 8.5;
-        const targetY = smoothT * BRIDGE_HEIGHT;
+        const smooth = t * t * (3 - 2 * t);
 
         camera.position.y +=
-          (targetY - camera.position.y) * 0.035;
+          (smooth * 8.5 - camera.position.y) * 0.04;
       }
     }
 
     if (scrollState.mode === "bridgeHold") {
       camera.rotation.x +=
-        (-0.05 - camera.rotation.x) * 0.02;
+        (-0.05 - camera.rotation.x) * 0.03;
     }
 
     if (scrollState.mode === "dive") {
       camera.position.y +=
-        (-12 - camera.position.y) * 0.02;
+        (-12 - camera.position.y) * 0.03;
 
       camera.rotation.x +=
-        (-0.6 - camera.rotation.x) * 0.02;
+        (-0.6 - camera.rotation.x) * 0.03;
 
-      camera.position.z -= 0.15;
+      camera.position.z -= 0.08;
     }
   });
 

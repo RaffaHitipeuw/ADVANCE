@@ -1,26 +1,29 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
-import Tunnel from "./Tunnel";
+import Tunnel from "./AboveWorld/Tunnel";
+import Bridge from "./AboveWorld/Bridge";
+import WaterSurface from "./WaterSurface";
+import WaterWorld from "./UnderwaterWorld/WaterWorld";
 import CameraRail from "./CameraRail";
-import Water from "./Water";
-import Bridge from "./Bridge";
 import CameraLook from "./CameraLook";
 
 export default function Scene() {
   return (
     <Canvas
-      camera={{ position: [0, 0, 5], fov: 60 }}
-      style={{
-        position: "fixed",
-        inset: 0,
-      }}
+      camera={{ fov: 60, near: 0.1, far: 300, position: [0, 0, 5] }}
     >
-      <ambientLight intensity={1} />
-      <Tunnel>
-        <Bridge />
-      </Tunnel>
-      <Water />
+      <color attach="background" args={["#0b1c1f"]} />
+      <ambientLight intensity={0.8} />
+
+      <group>
+        <Tunnel>
+          <Bridge />
+        </Tunnel>
+      </group>
+      <WaterSurface />
+      <WaterWorld />
+
       <CameraRail />
       <CameraLook />
     </Canvas>

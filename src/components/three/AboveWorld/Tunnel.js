@@ -1,9 +1,9 @@
-import Wall from "./Wall";
-import Gallery from "./Gallery";
+import Wall from "../Wall";
+import Gallery from "../Gallery";
 import Bridge from "./Bridge";
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { scrollState } from "./CameraRail";
+import { scrollState } from "../CameraRail";
 
 export default function Tunnel() {
   const group = useRef();
